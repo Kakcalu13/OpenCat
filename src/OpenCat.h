@@ -383,7 +383,6 @@ float protectiveShift;  //reduce the wearing of the potentiometer
 #endif
 
 #include "PCA9685servo.h"
-#include "motion.h"
 
 #ifndef MAIN_SKETCH
 #define GYRO_PIN 0
@@ -430,6 +429,7 @@ float protectiveShift;  //reduce the wearing of the potentiometer
 
 #ifdef GYRO_PIN
 #include "imu.h"
+#include "motion.h"
 #ifdef IR_PIN
 #undef TASK_QUEUE
 #endif
@@ -451,8 +451,8 @@ void initRobot() {
   PTLF("\n* Start *");
   PTLF(MODEL);
   PTLF(SOFTWARE_VERSION);
-  if (eeprom(BOOTUP_SOUND_STATE))
-    playMelody(MELODY_NORMAL);
+//  if (eeprom(BOOTUP_SOUND_STATE))
+//    playMelody(MELODY_NORMAL);
 
 #ifdef GYRO_PIN
   imuSetup();
