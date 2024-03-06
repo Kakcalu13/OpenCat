@@ -1,5 +1,4 @@
 
-
 // balancing parameters
 #define ROLL_LEVEL_TOLERANCE 5  //the body is still considered as level, no angle adjustment
 #define PITCH_LEVEL_TOLERANCE 3
@@ -108,9 +107,21 @@ void calibratedPWM(byte i, float angle, float speedRatio = 0) {
   int steps = speedRatio > 0 ? int(round(abs(duty - duty0) / 1.0 /*degreeStep*/ / speedRatio)) : 0;
   //if default speed is 0, no interpolation will be used
   //otherwise the speed ratio is compared to 1 degree per second.
+
+  int counter = 0;
   for (int s = 0; s <= steps; s++) {
-    pwm.writeAngle(i, duty + (steps == 0 ? 0 : (1 + cos(M_PI * s / steps)) / 2 * (duty0 - duty)));
-  }
+      if (counter == 30) {
+        counter = 0;
+        if (printGyro){
+          read_IMU();
+          print6Axis();
+        }
+      }
+//      Serial.print(counter);
+      counter++;
+      pwm.writeAngle(i, duty + (steps == 0 ? 0 : (1 + cos(M_PI * s / steps)) / 2 * (duty0 - duty)));
+    }
+
 }
 
 template<typename T> void allCalibratedPWM(T *dutyAng, byte offset = 0) {
@@ -145,14 +156,15 @@ template<typename T> void transform(T *target, byte angleDataRatio = 1, float sp
     //   return;
     // }
     int steps = speedRatio > 0 ? int(round(maxDiff / 1.0 /*degreeStep*/ / speedRatio)) : 0;  //default speed is 1 degree per step
-    for (int s = 0; s <= steps; s++) {
-      for (byte i = offset; i < DOF; i++) {
-        if (manualHeadQ && i < HEAD_GROUP_LEN && token == T_SKILL)
-          continue;
-        float dutyAng = (target[i - offset] * angleDataRatio + (steps == 0 ? 0 : (1 + cos(M_PI * s / steps)) / 2 * diff[i - offset]));
-        calibratedPWM(i, dutyAng);
-      }
-    }
+//    for (int s = 0; s <= steps; s++) {
+//      for (byte i = offset; i < DOF; i++) {
+//        Serial.println("HERE!");
+//        if (manualHeadQ && i < HEAD_GROUP_LEN && token == T_SKILL)
+//          continue;
+//        float dutyAng = (target[i - offset] * angleDataRatio + (steps == 0 ? 0 : (1 + cos(M_PI * s / steps)) / 2 * diff[i - offset]));
+//        calibratedPWM(i, dutyAng);
+//      }
+//    }
     delete[] diff;
   }
 }
